@@ -15,24 +15,15 @@ else
   FIND_ARGS="-executable"
 fi
 
-echo $root
-
 find "$owndir"/autoformat -type f $FIND_ARGS | {
   abort=0
-
-echo "hjfdkshjk"
 
   while read formatter ; do
     magic="$formatter".magic
 
     patterns="$formatter".patterns
 
-echo "$magic"
-echo "$patterns"
-
     [ -f "$patterns" -o -f "$magic" ] || continue
-
-echo "$(git diff --name-only --cached)"
 
     git diff --name-only --cached | {
       labort=0
@@ -63,8 +54,6 @@ echo "$(git diff --name-only --cached)"
 
       exit $labort
     } || abort=1
-
-echo "$(git diff --name-only)"
 
     git diff --name-only | {
       labort=0
