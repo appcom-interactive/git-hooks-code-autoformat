@@ -15,21 +15,31 @@ else
   FIND_ARGS="-executable"
 fi
 
+echo $root
+
 find "$owndir"/autoformat -type f $FIND_ARGS | {
   abort=0
+
+echo "hjfdkshjk"
 
   while read formatter ; do
     magic="$formatter".magic
 
     patterns="$formatter".patterns
 
+echo "$magic"
+echo "$patterns"
+
     [ -f "$patterns" -o -f "$magic" ] || continue
+
+echo "$(git diff --name-only --cached)"
 
     git diff --name-only --cached | {
       labort=0
 
       while IFS= read -r orig ; do
         orig="${root}/${orig}"
+        echo "$orig"
 
         # file is getting deleted, ignore
         [ -f "$orig" ] || continue
@@ -54,11 +64,14 @@ find "$owndir"/autoformat -type f $FIND_ARGS | {
       exit $labort
     } || abort=1
 
+echo "$(git diff --name-only)"
+
     git diff --name-only | {
       labort=0
 
       while IFS= read -r orig ; do
         orig="${root}/${orig}"
+        echo "$orig"
 
         # file is getting deleted, ignore
         [ -f "$orig" ] || continue
