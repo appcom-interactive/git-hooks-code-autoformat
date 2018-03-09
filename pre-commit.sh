@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Executing pre-commit hook"
+
 root="$(git rev-parse --show-toplevel)"
 [ -d "$root" ] || exit 1
 
@@ -18,7 +20,9 @@ find "$owndir"/autoformat -type f $FIND_ARGS | {
 
   while read formatter ; do
     magic="$formatter".magic
+
     patterns="$formatter".patterns
+
     [ -f "$patterns" -o -f "$magic" ] || continue
 
     git diff --name-only --cached | {
@@ -49,6 +53,35 @@ find "$owndir"/autoformat -type f $FIND_ARGS | {
 
       exit $labort
     } || abort=1
+
+    git diff --name-only | {
+      labort=0
+
+      while IFS= read -r orig ; do
+        orig="${root}/${orig}"
+
+        # file is getting deleted, ignore
+        [ -f "$orig" ] || continue
+
+        # file matches one of the patterns
+        match_pattern=''
+        [ -f "$patterns" ] && echo "$orig" | grep -Eqif "$patterns" && match_pattern='1'
+
+        # file’s libmagic output matches
+        match_magic=''
+        [ $match_pattern ] || {
+          [ -f "$magic" ] && file "$orig" | grep -Eqif "$magic" && match_magic='1'
+        }
+
+        # if none, ignore
+        [ "$match_pattern" -o "$match_magic" ] ||  continue
+
+        "$formatter" "$orig" || labort=1
+      done
+
+      exit $labort
+    } || abort=1
+
   done
 
   exit $abort
